@@ -1,5 +1,7 @@
 import { Collection, ObjectId } from 'mongodb';
 import { getDB } from './database.service';
+import { promises as fs } from 'fs';
+import { ITrigger } from '../triggers/trigger.interface';
 
 let configCollection: Collection;
 
@@ -11,11 +13,46 @@ async function getConfigCollection() {
     return configCollection;
 }
 
+async function fileExists(path: string) {
+    try {
+        await fs.access(path); 
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+async function importTrigger(triggerPath: string) {
+    let trigger = await import(triggerPath);
+    return new trigger.default();
+}
+
 export async function getTriggers() {
     let cfgColl = await getConfigCollection();
     let triggerDoc = await cfgColl.find({_id: 'triggers'}).next();
     let triggerNames = triggerDoc!.triggers;
-    return triggerNames;
+
+    let triggerPaths = [
+        process.env.JUSTIN_CORE_PATH,
+        process.env.JUSTIN_APP_PATH
+    ];
+
+    let triggerObjects: ITrigger[] = [];
+
+    // instantiate Triggers
+    for (let tName of triggerNames) {
+        // look for each trigger in JUSTIN_CORE_PATH, etc.
+        for (let tPath of triggerPaths) {
+            let tFullPath = tPath + '/src/triggers/' + tName + ".ts";
+            if (await fileExists(tFullPath)) {
+                console.log("will try to load trigger", tFullPath);
+                triggerObjects.push(await importTrigger(tFullPath));
+            } else {
+                //console.log("couldn't find trigger:", tFullPath);
+            }
+        }        
+    }
+    return triggerObjects;
 }
 
 export async function clearTriggers() {
