@@ -45,10 +45,10 @@ export async function getTriggers() {
         for (let tPath of triggerPaths) {
             let tFullPath = tPath + '/src/triggers/' + tName + ".ts";
             if (await fileExists(tFullPath)) {
-                console.log("will try to load trigger", tFullPath);
+                //console.log("will try to load trigger", tFullPath);
                 triggerObjects.push(await importTrigger(tFullPath));
             } else {
-                console.log("couldn't find trigger:", tFullPath);
+                //console.log("couldn't find trigger:", tFullPath);
             }
         }        
     }

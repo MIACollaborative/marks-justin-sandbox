@@ -15,13 +15,25 @@ userPrefs['address'] = {
     postalCode: '48104'
 };
 
-userPrefs['usertimepref.trigger'] = {
-    messageTimes: {
-        morning: new Date(1970, 1, 1, 8, 0),
-        midday: new Date(1970, 1, 1, 12, 0),
-        afternoon: new Date(1970, 1, 1, 15, 0), 
-        evening: new Date(1970, 1, 1, 18, 0)
-    }
+userPrefs['messageTimePrefs'] = {
+    namedTimes: [
+        {
+            name: 'morning',
+            time: new Date(1970, 1, 1, 8, 0)
+        },
+        {
+            name: 'midday',
+            time: new Date(1970, 1, 1, 12, 0)
+        },
+        {
+            name: 'afternoon',
+            time: new Date(1970, 1, 1, 15, 0)
+        }, 
+        {
+            name: 'evening', 
+            time: new Date(1970, 1, 1, 18, 0)
+        }
+    ]
 }
 
 const userState = {};
