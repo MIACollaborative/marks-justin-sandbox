@@ -6,16 +6,19 @@ export class User {
     private email: string;
     private name: string;
     private id: string;
+    private studyParams: Object | undefined;
     private prefs: Object | undefined;
     private state: Object | undefined;
 
     constructor(name: string,
         email: string, 
         id: string, 
+        params?: Object,
         prefs?: Object,
         state?: Object) {
             this.name = name;
             this.email = email;
+            this.studyParams = params;
             this.id = id;
             this.prefs = prefs;
             this.state = state;
@@ -29,6 +32,7 @@ export class User {
         return new User(mongoDoc['email'], 
             mongoDoc['name'], 
             id, 
+            mongoDoc['studyParams'],
             mongoDoc['prefs'], 
             mongoDoc['state']);
 
@@ -46,8 +50,20 @@ export class User {
         return this.email;
     }
 
-    public getPrefs(): Object | undefined { 
-        return this.prefs;
+    public getStudyParams(): Object | undefined {
+        return this.studyParams;
+    }
+
+    public getPrefs(key: string = ''): Object | undefined { 
+        if (this.prefs) {
+            if (key && key !== '') {
+                return this.prefs[key];
+            } else {
+                return this.prefs;
+            }
+        } else {
+            return undefined;
+        }
     }
 
     public getState(): Object | undefined {

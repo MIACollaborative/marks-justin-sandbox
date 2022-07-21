@@ -1,7 +1,7 @@
 import { Collection, ObjectId } from 'mongodb';
 import { getDB } from './database.service';
 import { promises as fs } from 'fs';
-import { ITrigger } from '../triggers/trigger.interface';
+import { ITrigger } from '../models/trigger.interface';
 
 let configCollection: Collection;
 
@@ -48,7 +48,7 @@ export async function getTriggers() {
                 console.log("will try to load trigger", tFullPath);
                 triggerObjects.push(await importTrigger(tFullPath));
             } else {
-                //console.log("couldn't find trigger:", tFullPath);
+                console.log("couldn't find trigger:", tFullPath);
             }
         }        
     }
@@ -58,8 +58,17 @@ export async function getTriggers() {
 export async function clearTriggers() {
     let cfgColl = await getConfigCollection();
     let triggerDoc = await cfgColl.find({_id: 'triggers'}).next();
-    triggerDoc!.triggers = [];
-    await cfgColl.replaceOne({_id: 'triggers'}, triggerDoc!);
+    if (triggerDoc) {
+        triggerDoc!.triggers = [];
+        await cfgColl.replaceOne({_id: 'triggers'}, triggerDoc!);
+    } else {
+        let triggerDocX = {
+            _id: 'triggers',
+            triggers: []
+        }
+        // @ts-ignore
+        await cfgColl.insertOne(triggerDocX); // this actually works, but makes TS mad
+    }
 }
 
 export async function addTrigger(trigger: string) {

@@ -1,27 +1,31 @@
 
 import { DecisionRecord } from '../models/decisionrecord.model';
 import { User } from '../models/user.model';
-import { ITrigger } from './trigger.interface';
+import { ITrigger } from '../models/trigger.interface';
+import { writeLogMessage } from '../actions/logwriter.action';
+import { MessageTimePrefs } from '../dataModels/prefs/messageTimePrefs.model';
 
 export default class UserTimePrefTrigger implements ITrigger {
 
+    name: string = "UserTimePrefTrigger";
+
     getName(): string {
-        return "UserTimePrefTrigger";
+        return this.name;
     }
 
     shouldRun(user: User, curTime: Date): boolean {
-        let prefs = user.getPrefs();
-        if (!prefs) return false;
-        let messageTimes = prefs['messageTimes'];
-        if (!messageTimes) return false;
+        let prefs: MessageTimePrefs | undefined = 
+            user.getPrefs(MessageTimePrefs.KEY) as MessageTimePrefs;
+        let messageTimePrefs: MessageTimePrefs = 
+            prefs as MessageTimePrefs;
+        if (!messageTimePrefs) return false;
 
-        console.log(messageTimes);
-        for (let mt in messageTimes) {
-            let t = messageTimes[mt] as Date;
+        // TODO: deal with timezones?
+        for (let mt of messageTimePrefs.namedTimes) {
+            let t = mt.time;
             t.setFullYear(curTime.getFullYear());
             t.setMonth(curTime.getMonth());
             t.setDate(curTime.getDate());
-            console.log(t);
             let diff = t.getTime() - curTime.getTime();
             if (Math.abs(diff) < 1000 * 60) { // within a minute
                 return true;
@@ -35,9 +39,13 @@ export default class UserTimePrefTrigger implements ITrigger {
     }
 
     doAction(user: User, curTime: Date): DecisionRecord {
-        console.log('did the action!');
-        return new DecisionRecord(user, this, { message: "Did the action" }, new Date(),);
-        // TODO: record user info, dice roll, probability, etc.
+        let message: string = "Did the action for " + user.getName();
+        writeLogMessage(message).then(() => {
+            // not sure what to do here.
+            // the action should log it's own errors, not the trigger.
+            // the trigger is "fire and forget" perhaps.
+        }); 
+        return new DecisionRecord(user, this.name, { message: message }, curTime);
     }
 
 }

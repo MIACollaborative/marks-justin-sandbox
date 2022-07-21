@@ -1,16 +1,18 @@
 import { User } from "./user.model";
-import { ITrigger } from '../triggers/trigger.interface';
+import { ITrigger } from './trigger.interface';
 
 export class DecisionRecord {
-    timestamp: Date;
     user: User;
-    trigger: ITrigger;
+    triggerId: string;
     record: Object;
+    providedTimestamp: Date;
+    generatedTimestamp: Date;
 
-    constructor(user: User, trigger: ITrigger, record: Object, timestamp: Date) {
+    constructor(user: User, triggerId: string, record: Object, timestamp: Date) {
         this.user = user;
-        this.trigger = trigger;
+        this.triggerId = triggerId;
         this.record = record;
-        this.timestamp = timestamp
+        this.providedTimestamp = timestamp;
+        this.generatedTimestamp = new Date();
     }
 }
